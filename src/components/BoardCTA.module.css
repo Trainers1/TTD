@@ -146,15 +146,35 @@
 
 @media (max-width: 768px) {
   .section {
-    padding: 0 24px 80px;
+    padding: 0 20px 80px;
   }
   .card {
     grid-template-columns: 1fr;
   }
   .visualSide {
-    padding: 40px 28px;
+    padding: 36px 24px;
+  }
+  .postList {
+    max-width: 100%;
+  }
+  .postCard {
+    padding: 12px 16px;
+  }
+  .postTitle {
+    font-size: 13px;
+  }
+  .postAuthor {
+    font-size: 12px;
   }
   .textSide {
-    padding: 48px 28px;
+    padding: 40px 24px;
+  }
+  .desc {
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+  .boardBtn {
+    padding: 12px 24px;
+    font-size: 14px;
   }
 }

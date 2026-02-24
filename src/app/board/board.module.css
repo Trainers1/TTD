@@ -615,20 +615,49 @@
 
 @media (max-width: 768px) {
   .main {
-    padding: 120px 24px 80px;
+    padding: 110px 20px 80px;
+  }
+  .header {
+    margin-bottom: 32px;
+  }
+  .subtitle {
+    font-size: 14px;
   }
   .row {
-    grid-template-columns: 32px 1fr 60px;
+    grid-template-columns: 28px 1fr 56px;
     gap: 8px;
+    padding: 14px 6px;
   }
   .rowDate {
     display: none;
+  }
+  .rowTitle {
+    font-size: 13px;
+  }
+  .rowAuthor {
+    font-size: 12px;
   }
   .formRow {
     grid-template-columns: 1fr;
   }
   .postCard {
+    padding: 20px;
+  }
+  .postContent {
+    font-size: 14px;
+  }
+  .commentTitle {
+    font-size: 15px;
+  }
+  .pageBtn {
+    min-width: 40px;
+    height: 40px;
+  }
+  .modal {
     padding: 24px;
+  }
+  .modalTitle {
+    font-size: 16px;
   }
   .commentInputRow {
     flex-direction: column;

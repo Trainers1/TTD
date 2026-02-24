@@ -68,8 +68,18 @@
 
 @media (max-width: 768px) {
   .desc {
-    padding: 48px 24px 64px;
+    padding: 40px 20px 56px;
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 20px;
+  }
+  .brandName {
+    font-size: clamp(44px, 14vw, 88px);
+    letter-spacing: -3px;
+  }
+  .text h2 {
+    font-size: clamp(18px, 5vw, 28px);
+  }
+  .text p {
+    font-size: 14px;
   }
 }

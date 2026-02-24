@@ -98,7 +98,11 @@
 }
 
 @media (max-width: 768px) {
-  .wrap { height: 360px; }
-  .dots { left: 24px; bottom: 24px; }
-  .controls { right: 24px; bottom: 24px; }
+  .wrap { height: 280px; }
+  .dots { left: 16px; bottom: 16px; }
+  .dot { width: 20px; }
+  .dotActive { width: 32px; }
+  .controls { right: 16px; bottom: 16px; gap: 8px; }
+  .btn { width: 36px; height: 36px; font-size: 15px; }
+  .counter { font-size: 11px; min-width: 36px; }
 }

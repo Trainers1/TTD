@@ -357,4 +357,29 @@
   .eventRow {
     grid-template-columns: 1fr;
   }
+  .calDay {
+    font-size: clamp(48px, 14vw, 72px);
+  }
+  .eventCard {
+    padding: 24px;
+  }
+  .prizeItem {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+  .prizeName {
+    font-size: 13px;
+  }
+  .firstItem .prizeName {
+    font-size: 14px;
+  }
+  .firstItem {
+    padding: 14px 16px;
+  }
+  .firstItem .prizeRank {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
 }
