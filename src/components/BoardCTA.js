@@ -5,7 +5,7 @@ import Link from "next/link";
 import styles from "./BoardCTA.module.css";
 
 const MOCK_POSTS = [
-  { title: "홀로라이브 카드 판매해요", author: "익명" },
+  { title: "홀로라이브 카드 판매해요!", author: "익명" },
   { title: "포켓몬 한정판 레어카드", author: "수집 마스터1" },
   { title: "오늘 ㅌㅌㄷ 후기!", author: "모푸" },
 ];
