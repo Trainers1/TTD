@@ -65,7 +65,7 @@ export default function SellerCTA({ seller }) {
             <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
               <path d="M12 3C6.48 3 2 6.58 2 10.9c0 2.78 1.86 5.22 4.65 6.6l-.96 3.56c-.08.3.25.55.52.38l4.2-2.8c.52.06 1.04.1 1.59.1 5.52 0 10-3.58 10-7.84C22 6.58 17.52 3 12 3z" />
             </svg>
-            카카오톡으로 오리파 셀러 신청하기
+            오리파 셀러 신청하기
             <span className={styles.arrow}>→</span>
           </a>
 

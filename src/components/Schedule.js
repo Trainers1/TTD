@@ -3,8 +3,29 @@
 import { useEffect, useRef } from "react";
 import styles from "./Schedule.module.css";
 
-const MONTHS_EN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const DAYS_EN = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const MONTHS_EN = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+const DAYS_EN = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 /* date 문자열 → 표시용 값 (타임존 이슈 방지를 위해 T12:00:00 추가) */
 function deriveFromDate(dateStr) {
@@ -37,7 +58,8 @@ export default function Schedule({ schedule, prizes, prizeImageUrl }) {
   const month = derived?.month ?? schedule?.month ?? "—";
   const day = derived?.day ?? schedule?.day ?? "—";
   const dow = derived?.dow ?? schedule?.dow ?? "—";
-  const location = schedule?.location ?? "경기 안양시 동안구 평촌대로217번길 15 3층";
+  const location =
+    schedule?.location ?? "경기 안양시 동안구 평촌대로217번길 15 3층";
   const time = schedule?.time ?? "오전 12시 — 오후 6시";
 
   const prizeList = prizes?.length ? prizes : DEFAULT_PRIZES;
@@ -100,7 +122,7 @@ export default function Schedule({ schedule, prizes, prizeImageUrl }) {
         </div>
         <div className={styles.calDivider} />
         <div className={styles.calInfo}>
-          <h3>ㅌㅌㄷ 트레이너스 트레이닝 데이</h3>
+          {/* <h3>ㅌㅌㄷ 트레이너스 트레이닝 데이</h3> */}
           <p>
             {location}
             <br />
@@ -125,10 +147,17 @@ export default function Schedule({ schedule, prizes, prizeImageUrl }) {
               const hasLink = !!p.link;
               const inner = (
                 <>
-                  <div className={`${styles.prizeRank} ${idx === 0 ? styles.first : ""}`}>
+                  <div
+                    className={`${styles.prizeRank} ${idx === 0 ? styles.first : ""}`}
+                  >
                     {p.rank}
                   </div>
-                  <span className={styles.prizeName} style={{ whiteSpace: "pre-wrap" }}>{p.name}</span>
+                  <span
+                    className={styles.prizeName}
+                    style={{ whiteSpace: "pre-wrap" }}
+                  >
+                    {p.name}
+                  </span>
                   {hasLink && <span className={styles.prizeLinkIcon}>↗</span>}
                   <span className={styles.prizeTag}>{p.count}</span>
                 </>
