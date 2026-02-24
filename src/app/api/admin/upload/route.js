@@ -1,11 +1,16 @@
 import { cookies } from "next/headers";
 import crypto from "crypto";
-import { writeFile, mkdir } from "fs/promises";
-import { existsSync } from "fs";
-import path from "path";
+import { createClient } from "@supabase/supabase-js";
 
 const SESSION_SECRET = process.env.ADMIN_SESSION_SECRET || "ttd-secret-key-change-in-production";
 const COOKIE_NAME = "ttd_admin_session";
+
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) return null;
+  return createClient(url, serviceKey);
+}
 
 async function isAuthenticated() {
   const cookieStore = await cookies();
@@ -20,6 +25,11 @@ async function isAuthenticated() {
 export async function POST(request) {
   if (!(await isAuthenticated())) {
     return Response.json({ success: false, message: "인증이 필요합니다." }, { status: 401 });
+  }
+
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
+    return Response.json({ success: false, message: "Supabase가 설정되지 않았습니다." }, { status: 500 });
   }
 
   try {
@@ -46,15 +56,25 @@ export async function POST(request) {
     const buffer = Buffer.from(bytes);
 
     const filename = `${Date.now()}-${crypto.randomBytes(4).toString("hex")}.${ext}`;
-    const uploadDir = path.join(process.cwd(), "public", "images", "uploads");
+    const filePath = `admin/${filename}`;
 
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
+    const { error: uploadError } = await supabase.storage
+      .from("images")
+      .upload(filePath, buffer, {
+        contentType: file.type,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error("Supabase upload error:", uploadError);
+      return Response.json({ success: false, message: "업로드에 실패했습니다." }, { status: 500 });
     }
 
-    await writeFile(path.join(uploadDir, filename), buffer);
+    const { data: urlData } = supabase.storage
+      .from("images")
+      .getPublicUrl(filePath);
 
-    return Response.json({ success: true, url: `/images/uploads/${filename}`, mediaType });
+    return Response.json({ success: true, url: urlData.publicUrl, mediaType });
   } catch (err) {
     console.error("Upload error:", err);
     return Response.json({ success: false, message: "업로드에 실패했습니다." }, { status: 500 });
