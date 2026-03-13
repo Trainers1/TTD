@@ -33,7 +33,7 @@ export default function SellerCTA({ seller }) {
           observer.unobserve(el);
         }
       },
-      { threshold: 0.12 },
+      { threshold: 0 },
     );
     observer.observe(el);
     return () => observer.disconnect();

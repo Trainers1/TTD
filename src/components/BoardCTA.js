@@ -23,7 +23,7 @@ export default function BoardCTA() {
           observer.unobserve(el);
         }
       },
-      { threshold: 0.12 },
+      { threshold: 0 },
     );
     observer.observe(el);
     return () => observer.disconnect();

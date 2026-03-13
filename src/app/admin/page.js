@@ -7,7 +7,7 @@ import styles from "./admin.module.css";
 function getYoutubeId(url) {
   if (!url) return null;
   const match = url.match(
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/,
   );
   return match ? match[1] : null;
 }
@@ -123,7 +123,11 @@ async function uploadFile(file) {
     return { success: false, message: `업로드 실패 (${uploadRes.status})` };
   }
 
-  return { success: true, url: prepData.publicUrl, mediaType: prepData.mediaType };
+  return {
+    success: true,
+    url: prepData.publicUrl,
+    mediaType: prepData.mediaType,
+  };
 }
 
 export default function AdminPage() {
@@ -258,7 +262,7 @@ export default function AdminPage() {
       const slide = prev.slides[index];
       // Supabase에 업로드된 파일만 삭제 시도 (외부 URL·YouTube 제외)
       const urls = [slide.imageUrl, slide.mobileUrl].filter(
-        (u) => u && u.includes("/storage/v1/object/public/")
+        (u) => u && u.includes("/storage/v1/object/public/"),
       );
       if (urls.length > 0) {
         fetch("/api/admin/upload", {
@@ -413,7 +417,8 @@ export default function AdminPage() {
     const data = await uploadFile(file);
     if (data.success) {
       updateSlide(index, field, data.url);
-      if (field === "imageUrl") updateSlide(index, "mediaType", data.mediaType || "image");
+      if (field === "imageUrl")
+        updateSlide(index, "mediaType", data.mediaType || "image");
       showToast("업로드 완료!");
     } else {
       showToast(data.message || "업로드 실패");
@@ -674,7 +679,9 @@ export default function AdminPage() {
                     className={styles.noticeInput}
                     style={{ width: 130, flexShrink: 0 }}
                     value={link.name}
-                    onChange={(e) => updateFooterLink(i, "name", e.target.value)}
+                    onChange={(e) =>
+                      updateFooterLink(i, "name", e.target.value)
+                    }
                     placeholder="표시 이름 (예: Instagram)"
                   />
                   <input
@@ -722,7 +729,10 @@ export default function AdminPage() {
                         }
                       />
                     </div>
-                    <div className={styles.field} style={{ flexShrink: 0, width: "auto" }}>
+                    <div
+                      className={styles.field}
+                      style={{ flexShrink: 0, width: "auto" }}
+                    >
                       <label>미디어 타입</label>
                       <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
                         {["image", "video"].map((type) => (
@@ -735,9 +745,14 @@ export default function AdminPage() {
                               border: "1px solid",
                               fontSize: 13,
                               cursor: "pointer",
-                              background: slide.mediaType === type ? "#e8533e" : "none",
-                              borderColor: slide.mediaType === type ? "#e8533e" : "#3e3e46",
-                              color: slide.mediaType === type ? "#fff" : "#7a7680",
+                              background:
+                                slide.mediaType === type ? "#e8533e" : "none",
+                              borderColor:
+                                slide.mediaType === type
+                                  ? "#e8533e"
+                                  : "#3e3e46",
+                              color:
+                                slide.mediaType === type ? "#fff" : "#7a7680",
                               transition: "all 0.15s",
                             }}
                           >
@@ -786,7 +801,11 @@ export default function AdminPage() {
                       ) : slide.mediaType === "video" ? (
                         <video
                           src={slide.imageUrl}
-                          style={{ width: "100%", height: 160, objectFit: "cover" }}
+                          style={{
+                            width: "100%",
+                            height: 160,
+                            objectFit: "cover",
+                          }}
                           muted
                           playsInline
                           controls
@@ -801,7 +820,13 @@ export default function AdminPage() {
                   <div className={styles.field} style={{ marginTop: 8 }}>
                     <label>
                       모바일용 URL{" "}
-                      <span style={{ fontWeight: 400, color: "#7a7680", fontSize: 12 }}>
+                      <span
+                        style={{
+                          fontWeight: 400,
+                          color: "#7a7680",
+                          fontSize: 12,
+                        }}
+                      >
                         (선택 — 비우면 PC용 이미지 사용)
                       </span>
                     </label>
@@ -824,7 +849,11 @@ export default function AdminPage() {
                         style={{ display: "none" }}
                         onChange={(e) => {
                           if (e.target.files?.[0])
-                            handleSlideUpload(i, e.target.files[0], "mobileUrl");
+                            handleSlideUpload(
+                              i,
+                              e.target.files[0],
+                              "mobileUrl",
+                            );
                         }}
                       />
                     </label>
@@ -834,13 +863,20 @@ export default function AdminPage() {
                       {slide.mediaType === "video" ? (
                         <video
                           src={slide.mobileUrl}
-                          style={{ width: "100%", height: 160, objectFit: "cover" }}
+                          style={{
+                            width: "100%",
+                            height: 160,
+                            objectFit: "cover",
+                          }}
                           muted
                           playsInline
                           controls
                         />
                       ) : (
-                        <img src={slide.mobileUrl} alt={`${slide.label} 모바일`} />
+                        <img
+                          src={slide.mobileUrl}
+                          alt={`${slide.label} 모바일`}
+                        />
                       )}
                     </div>
                   )}
@@ -1054,13 +1090,23 @@ export default function AdminPage() {
             <div className={styles.noticeSection}>
               <div className={styles.noticeSectionHeader}>
                 <span className={styles.noticeTitle}>유의 사항 목록</span>
-                <button className={styles.addBtn} onClick={addNotice} style={{ width: "auto", padding: "8px 14px" }}>
+                <button
+                  className={styles.addBtn}
+                  onClick={addNotice}
+                  style={{ width: "auto", padding: "8px 14px" }}
+                >
                   + 항목 추가
                 </button>
               </div>
               {(content.seller.notices || []).map((notice, i) => (
-                <div key={i} className={styles.noticeRow} style={{ alignItems: "flex-start" }}>
-                  <span className={styles.noticeNum} style={{ paddingTop: 6 }}>{i + 1}</span>
+                <div
+                  key={i}
+                  className={styles.noticeRow}
+                  style={{ alignItems: "flex-start" }}
+                >
+                  <span className={styles.noticeNum} style={{ paddingTop: 6 }}>
+                    {i + 1}
+                  </span>
                   <textarea
                     rows={2}
                     className={styles.noticeInput}
