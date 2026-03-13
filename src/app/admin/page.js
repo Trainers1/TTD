@@ -588,6 +588,7 @@ export default function AdminPage() {
                   updateField("intro", "description2", e.target.value)
                 }
               />
+              <span className={styles.hint}>줄바꿈(Enter) 사용 가능</span>
             </div>
 
             <div className={styles.divider} />
@@ -946,19 +947,20 @@ export default function AdminPage() {
             <div className={styles.noticeSection}>
               <div className={styles.noticeSectionHeader}>
                 <span className={styles.noticeTitle}>유의 사항 목록</span>
-                <button className={styles.addBtn} onClick={addNotice}>
+                <button className={styles.addBtn} onClick={addNotice} style={{ width: "auto", padding: "8px 14px" }}>
                   + 항목 추가
                 </button>
               </div>
               {(content.seller.notices || []).map((notice, i) => (
-                <div key={i} className={styles.noticeRow}>
-                  <span className={styles.noticeNum}>{i + 1}</span>
-                  <input
-                    type="text"
+                <div key={i} className={styles.noticeRow} style={{ alignItems: "flex-start" }}>
+                  <span className={styles.noticeNum} style={{ paddingTop: 6 }}>{i + 1}</span>
+                  <textarea
+                    rows={2}
                     className={styles.noticeInput}
                     value={notice}
                     onChange={(e) => updateNotice(i, e.target.value)}
-                    placeholder="유의 사항 내용"
+                    placeholder="유의 사항 내용 (Enter로 줄바꿈 가능)"
+                    style={{ resize: "vertical", lineHeight: "1.5" }}
                   />
                   <button
                     className={styles.deleteBtn}

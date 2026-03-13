@@ -127,7 +127,6 @@ export default function Schedule({ schedule, prizes, prizeImageUrl }) {
             {location}
             <br />
             {time}
-            <br /> * 셀러 참가자분들은 미리 입장하여 준비 부탁드립니다
           </p>
           <div className={styles.calBadge}>
             <span className={styles.blink} />
@@ -140,8 +139,8 @@ export default function Schedule({ schedule, prizes, prizeImageUrl }) {
       <div className={styles.eventRow}>
         <div className={`${styles.eventCard} reveal`}>
           <div className={styles.evLabel}>🎁 Lucky Draw</div>
-          <h3>구매자 추첨 이벤트</h3>
-          <p>물품 구매시 응모 가능! 추첨을 통해 다양한 경품을 드려요.</p>
+          <h3>ㅌㅌㄷ 추첨 이벤트</h3>
+          <p>구매 추첨, 스티커 랠리 추첨 등 도파민 뿜뿜!</p>
           <div className={styles.prizeList} ref={listRef}>
             {prizeList.map((p, idx) => {
               const hasLink = !!p.link;

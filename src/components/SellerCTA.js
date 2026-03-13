@@ -84,7 +84,7 @@ export default function SellerCTA({ seller }) {
             </div>
             <ul className={styles.noticeList}>
               {notices.map((notice, i) => (
-                <li key={i}>{notice}</li>
+                <li key={i} style={{ whiteSpace: "pre-line" }}>{notice}</li>
               ))}
             </ul>
             <button className={styles.closeBtn} onClick={() => setOpen(false)}>

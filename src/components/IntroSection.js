@@ -18,6 +18,16 @@ function parseHeadline(text) {
   return result;
 }
 
+function parseLineBreaks(text) {
+  if (!text) return null;
+  return text.split("\n").map((line, i, arr) => (
+    <span key={i}>
+      {line}
+      {i < arr.length - 1 && <br />}
+    </span>
+  ));
+}
+
 export default function IntroSection({ intro }) {
   const headline = intro?.headline ?? "ㅌㅌㄷ의\n메인 [[캐치프레이즈]]를 적는 위치";
   const description1 = intro?.description1 ?? "ㅌㅌㄷ 상세 설명 1";
@@ -34,7 +44,7 @@ export default function IntroSection({ intro }) {
       <div className={styles.text}>
         <h2>{parseHeadline(headline)}</h2>
         <p>{description1}</p>
-        <p>{description2}</p>
+        <p>{parseLineBreaks(description2)}</p>
       </div>
     </div>
   );

@@ -20,7 +20,9 @@ export default function Footer() {
       <div className={styles.logo}>
         ㅌㅌㄷ<span>.</span>
       </div>
-      <div className={styles.text}>© 2026 ㅌㅌㄷ. All rights reserved.</div>
+      <div className={styles.text}>
+        © 2026 TRAINERS Inc. All rights reserved.
+      </div>
       {footerLinks.length > 0 && (
         <div className={styles.links}>
           {footerLinks.map((link) => (

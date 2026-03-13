@@ -1,12 +1,11 @@
 import "@/styles/globals.css";
 
 export const metadata = {
-  title: "TTD",
-  description:
-    "쓸모를 나누고, 취향을 발견하는 작지만 특별한 벼룩시장. 매달 셋째 주 토요일.",
+  title: "ㅌㅌㄷ - 트레이너스 트레이딩 데이",
+  description: "카드를 좋아하는 사람들이 함께하는 TCG 플리마켓",
   openGraph: {
-    title: "ㅌㅌㄷ — 벼룩시장",
-    description: "쓸모를 나누고, 취향을 발견하는 작지만 특별한 벼룩시장",
+    title: "ㅌㅌㄷ - 트레이너스 트레이딩 데이",
+    description: "카드를 좋아하는 사람들이 함께하는 TCG 플리마켓",
     type: "website",
     locale: "ko_KR",
     /* url: "https://yourdomain.com", */
