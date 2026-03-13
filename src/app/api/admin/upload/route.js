@@ -22,6 +22,60 @@ async function isAuthenticated() {
   return token === expected;
 }
 
+const IMAGE_EXTS = ["jpg", "jpeg", "png", "gif", "webp"];
+const VIDEO_EXTS = ["mp4", "webm", "mov"];
+const ALL_EXTS = [...IMAGE_EXTS, ...VIDEO_EXTS];
+
+const MIME_MAP = {
+  jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png",
+  gif: "image/gif", webp: "image/webp",
+  mp4: "video/mp4", webm: "video/webm", mov: "video/quicktime",
+};
+
+// Supabase 공개 URL에서 스토리지 경로 추출
+function extractStoragePath(publicUrl) {
+  // URL 형식: https://<project>.supabase.co/storage/v1/object/public/images/<path>
+  const marker = "/object/public/images/";
+  const idx = publicUrl.indexOf(marker);
+  if (idx === -1) return null;
+  return publicUrl.slice(idx + marker.length);
+}
+
+// 파일 삭제
+export async function DELETE(request) {
+  if (!(await isAuthenticated())) {
+    return Response.json({ success: false, message: "인증이 필요합니다." }, { status: 401 });
+  }
+
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
+    return Response.json({ success: false, message: "Supabase가 설정되지 않았습니다." }, { status: 500 });
+  }
+
+  try {
+    const { urls } = await request.json(); // urls: string[]
+    const paths = (urls || [])
+      .map(extractStoragePath)
+      .filter(Boolean);
+
+    if (paths.length === 0) {
+      return Response.json({ success: true, deleted: 0 });
+    }
+
+    const { error } = await supabase.storage.from("images").remove(paths);
+    if (error) {
+      console.error("Storage delete error:", error);
+      return Response.json({ success: false, message: error.message }, { status: 500 });
+    }
+
+    return Response.json({ success: true, deleted: paths.length });
+  } catch (err) {
+    console.error("Delete error:", err);
+    return Response.json({ success: false, message: err.message }, { status: 500 });
+  }
+}
+
+// 서명된 업로드 URL 발급 (파일은 브라우저에서 직접 Supabase로 업로드)
 export async function POST(request) {
   if (!(await isAuthenticated())) {
     return Response.json({ success: false, message: "인증이 필요합니다." }, { status: 401 });
@@ -33,48 +87,44 @@ export async function POST(request) {
   }
 
   try {
-    const formData = await request.formData();
-    const file = formData.get("file");
+    const { fileName } = await request.json();
 
-    if (!file) {
-      return Response.json({ success: false, message: "파일이 없습니다." }, { status: 400 });
+    if (!fileName) {
+      return Response.json({ success: false, message: "파일명이 없습니다." }, { status: 400 });
     }
 
-    const ext = file.name.split(".").pop().toLowerCase();
-    const imageExts = ["jpg", "jpeg", "png", "gif", "webp"];
-    if (!imageExts.includes(ext)) {
+    const ext = fileName.split(".").pop().toLowerCase();
+    if (!ALL_EXTS.includes(ext)) {
       return Response.json(
-        { success: false, message: "jpg, png, gif, webp 파일만 업로드 가능합니다." },
+        { success: false, message: "jpg, png, gif, webp, mp4, webm, mov 파일만 업로드 가능합니다." },
         { status: 400 }
       );
     }
-    const mediaType = "image";
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    const mediaType = VIDEO_EXTS.includes(ext) ? "video" : "image";
+    const contentType = MIME_MAP[ext];
+    const filePath = `admin/${Date.now()}-${crypto.randomBytes(4).toString("hex")}.${ext}`;
 
-    const filename = `${Date.now()}-${crypto.randomBytes(4).toString("hex")}.${ext}`;
-    const filePath = `admin/${filename}`;
-
-    const { error: uploadError } = await supabase.storage
+    const { data: signedData, error: signError } = await supabase.storage
       .from("images")
-      .upload(filePath, buffer, {
-        contentType: file.type,
-        upsert: false,
-      });
+      .createSignedUploadUrl(filePath);
 
-    if (uploadError) {
-      console.error("Supabase upload error:", uploadError);
-      return Response.json({ success: false, message: "업로드에 실패했습니다." }, { status: 500 });
+    if (signError) {
+      console.error("Signed URL error:", signError);
+      return Response.json({ success: false, message: `서명 URL 생성 실패: ${signError.message}` }, { status: 500 });
     }
 
-    const { data: urlData } = supabase.storage
-      .from("images")
-      .getPublicUrl(filePath);
+    const { data: urlData } = supabase.storage.from("images").getPublicUrl(filePath);
 
-    return Response.json({ success: true, url: urlData.publicUrl, mediaType });
+    return Response.json({
+      success: true,
+      signedUrl: signedData.signedUrl,
+      publicUrl: urlData.publicUrl,
+      contentType,
+      mediaType,
+    });
   } catch (err) {
-    console.error("Upload error:", err);
-    return Response.json({ success: false, message: "업로드에 실패했습니다." }, { status: 500 });
+    console.error("Upload prepare error:", err);
+    return Response.json({ success: false, message: `오류: ${err.message}` }, { status: 500 });
   }
 }

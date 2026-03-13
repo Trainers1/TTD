@@ -3,6 +3,15 @@
 import { useState, useEffect, useCallback } from "react";
 import styles from "./admin.module.css";
 
+/* ── YouTube URL에서 영상 ID 추출 ── */
+function getYoutubeId(url) {
+  if (!url) return null;
+  const match = url.match(
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/
+  );
+  return match ? match[1] : null;
+}
+
 /* ── [[빨간색]] 헤드라인 미리보기 파싱 ── */
 function parseHeadlinePreview(text) {
   if (!text) return null;
@@ -93,12 +102,28 @@ function getTodayStr() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-/* ── 파일 업로드 헬퍼 ── */
+/* ── 파일 업로드 헬퍼 (브라우저 → Supabase 직접 업로드) ── */
 async function uploadFile(file) {
-  const fd = new FormData();
-  fd.append("file", file);
-  const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-  return res.json();
+  // 1단계: 서버에서 서명된 업로드 URL 발급
+  const prepRes = await fetch("/api/admin/upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ fileName: file.name }),
+  });
+  const prepData = await prepRes.json();
+  if (!prepData.success) return prepData;
+
+  // 2단계: 브라우저에서 Supabase로 직접 PUT 업로드 (서버 경유 없음)
+  const uploadRes = await fetch(prepData.signedUrl, {
+    method: "PUT",
+    headers: { "Content-Type": prepData.contentType },
+    body: file,
+  });
+  if (!uploadRes.ok) {
+    return { success: false, message: `업로드 실패 (${uploadRes.status})` };
+  }
+
+  return { success: true, url: prepData.publicUrl, mediaType: prepData.mediaType };
 }
 
 export default function AdminPage() {
@@ -227,9 +252,21 @@ export default function AdminPage() {
     }));
   }
 
-  function removeSlide(index) {
+  async function removeSlide(index) {
     setContent((prev) => {
       if (prev.slides.length <= 1) return prev;
+      const slide = prev.slides[index];
+      // Supabase에 업로드된 파일만 삭제 시도 (외부 URL·YouTube 제외)
+      const urls = [slide.imageUrl, slide.mobileUrl].filter(
+        (u) => u && u.includes("/storage/v1/object/public/")
+      );
+      if (urls.length > 0) {
+        fetch("/api/admin/upload", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ urls }),
+        });
+      }
       const slides = prev.slides.filter((_, i) => i !== index);
       return { ...prev, slides };
     });
@@ -371,12 +408,12 @@ export default function AdminPage() {
   }
 
   /* ── 미디어 업로드 핸들러 ── */
-  async function handleSlideUpload(index, file) {
+  async function handleSlideUpload(index, file, field = "imageUrl") {
     showToast("업로드 중...");
     const data = await uploadFile(file);
     if (data.success) {
-      updateSlide(index, "imageUrl", data.url);
-      updateSlide(index, "mediaType", data.mediaType || "image");
+      updateSlide(index, field, data.url);
+      if (field === "imageUrl") updateSlide(index, "mediaType", data.mediaType || "image");
       showToast("업로드 완료!");
     } else {
       showToast(data.message || "업로드 실패");
@@ -685,15 +722,34 @@ export default function AdminPage() {
                         }
                       />
                     </div>
-                    {/*
-                    <div className={styles.field}>
+                    <div className={styles.field} style={{ flexShrink: 0, width: "auto" }}>
                       <label>미디어 타입</label>
-                      <span style={{ fontSize: 14, color: "#e8e6e1" }}>이미지 / GIF</span>
+                      <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                        {["image", "video"].map((type) => (
+                          <button
+                            key={type}
+                            onClick={() => updateSlide(i, "mediaType", type)}
+                            style={{
+                              padding: "5px 14px",
+                              borderRadius: 6,
+                              border: "1px solid",
+                              fontSize: 13,
+                              cursor: "pointer",
+                              background: slide.mediaType === type ? "#e8533e" : "none",
+                              borderColor: slide.mediaType === type ? "#e8533e" : "#3e3e46",
+                              color: slide.mediaType === type ? "#fff" : "#7a7680",
+                              transition: "all 0.15s",
+                            }}
+                          >
+                            {type === "image" ? "이미지" : "영상"}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    */}
                   </div>
+                  {/* PC용 */}
                   <div className={styles.field}>
-                    <label>URL</label>
+                    <label>PC용 URL</label>
                     <input
                       type="text"
                       placeholder="https://example.com/media.mp4"
@@ -706,34 +762,85 @@ export default function AdminPage() {
                   <div className={styles.uploadRow}>
                     <span className={styles.uploadOr}>또는</span>
                     <label className={styles.uploadBtn}>
-                      📁 파일 업로드
+                      📁 PC용 파일 업로드
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/*,video/mp4,video/webm,video/quicktime"
                         style={{ display: "none" }}
                         onChange={(e) => {
                           if (e.target.files?.[0])
-                            handleSlideUpload(i, e.target.files[0]);
+                            handleSlideUpload(i, e.target.files[0], "imageUrl");
                         }}
                       />
                     </label>
                   </div>
                   {slide.imageUrl && (
                     <div className={styles.preview}>
-                      {slide.mediaType === "video" ? (
+                      {getYoutubeId(slide.imageUrl) ? (
+                        <iframe
+                          src={`https://www.youtube.com/embed/${getYoutubeId(slide.imageUrl)}?mute=1&rel=0`}
+                          style={{ width: "100%", height: 160, border: "none" }}
+                          allow="encrypted-media"
+                          allowFullScreen
+                        />
+                      ) : slide.mediaType === "video" ? (
                         <video
                           src={slide.imageUrl}
-                          style={{
-                            width: "100%",
-                            height: 160,
-                            objectFit: "cover",
-                          }}
+                          style={{ width: "100%", height: 160, objectFit: "cover" }}
                           muted
                           playsInline
                           controls
                         />
                       ) : (
                         <img src={slide.imageUrl} alt={slide.label} />
+                      )}
+                    </div>
+                  )}
+
+                  {/* 모바일용 */}
+                  <div className={styles.field} style={{ marginTop: 8 }}>
+                    <label>
+                      모바일용 URL{" "}
+                      <span style={{ fontWeight: 400, color: "#7a7680", fontSize: 12 }}>
+                        (선택 — 비우면 PC용 이미지 사용)
+                      </span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="https://example.com/mobile.jpg"
+                      value={slide.mobileUrl ?? ""}
+                      onChange={(e) =>
+                        updateSlide(i, "mobileUrl", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className={styles.uploadRow}>
+                    <span className={styles.uploadOr}>또는</span>
+                    <label className={styles.uploadBtn}>
+                      📁 모바일용 파일 업로드
+                      <input
+                        type="file"
+                        accept="image/*,video/mp4,video/webm,video/quicktime"
+                        style={{ display: "none" }}
+                        onChange={(e) => {
+                          if (e.target.files?.[0])
+                            handleSlideUpload(i, e.target.files[0], "mobileUrl");
+                        }}
+                      />
+                    </label>
+                  </div>
+                  {slide.mobileUrl && (
+                    <div className={styles.preview}>
+                      {slide.mediaType === "video" ? (
+                        <video
+                          src={slide.mobileUrl}
+                          style={{ width: "100%", height: 160, objectFit: "cover" }}
+                          muted
+                          playsInline
+                          controls
+                        />
+                      ) : (
+                        <img src={slide.mobileUrl} alt={`${slide.label} 모바일`} />
                       )}
                     </div>
                   )}
