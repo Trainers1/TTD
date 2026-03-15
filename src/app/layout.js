@@ -1,6 +1,7 @@
 import "@/styles/globals.css";
 
 export const metadata = {
+  metadataBase: new URL("https://www.ttd.kr"),
   title: "ㅌㅌㄷ - 트레이너스 트레이딩 데이",
   description: "카드를 좋아하는 사람들이 함께하는 TCG 플리마켓",
   openGraph: {
@@ -8,8 +9,7 @@ export const metadata = {
     description: "카드를 좋아하는 사람들이 함께하는 TCG 플리마켓",
     type: "website",
     locale: "ko_KR",
-    /* url: "https://yourdomain.com", */
-    /* images: [{ url: "/images/og-image.jpg", width: 1200, height: 630 }], */
+    url: "https://www.ttd.kr",
   },
   icons: {
     icon: "/images/favicon.ico",
